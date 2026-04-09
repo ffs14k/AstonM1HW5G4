@@ -74,14 +74,14 @@ public class AppController {
                 System.out.printf("  %2d. %s%n", i + 1, students.get(i));
             }
 
-            // Сохраняем отсортированный результат в CSV.
+            // Cохраняем отсортированный результат в CSV.
             System.out.print("\nСохранить результат в CSV? (y/n): ");
             if (readYesNoChoice()) {
                 System.out.print("Путь для сохранения (Enter = " + path + "): ");
                 String outputPath = scanner.nextLine().trim();
                 if (outputPath.isEmpty()) outputPath = path;
                 try {
-                    new FileWriterService(outputPath).writeToFile(students);
+                    new StudentFileWriterService(outputPath).writeToFile(students);
                     System.out.println("Сохранено в: " + outputPath);
                 } catch (Exception e) {
                     System.out.println("Ошибка записи: " + e.getMessage());

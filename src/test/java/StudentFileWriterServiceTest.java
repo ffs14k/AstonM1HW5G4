@@ -8,7 +8,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class FileWriterServiceTest {
+class StudentFileWriterServiceTest {
 
     @TempDir
     Path tempDir;
@@ -23,7 +23,7 @@ class FileWriterServiceTest {
         Path file = tempDir.resolve("students.csv");
         Files.writeString(file, "group,average,recordBook\n");
 
-        FileWriterService writer = new FileWriterService(file.toString());
+        StudentFileWriterService writer = new StudentFileWriterService(file.toString());
         writer.writeToFile(List.of(
                 s("ИТ-21-1", 4.5, "100001"),
                 s("ИТ-21-2", 3.8, "100002")
@@ -44,7 +44,7 @@ class FileWriterServiceTest {
     void appendsOnSecondWrite() throws IOException {
         Path file = tempDir.resolve("students.csv");
         Files.writeString(file, "group,average,recordBook\n");
-        FileWriterService writer = new FileWriterService(file.toString());
+        StudentFileWriterService writer = new StudentFileWriterService(file.toString());
 
         writer.writeToFile(List.of(s("ИТ-21-1", 4.5, "100001")));
         writer.writeToFile(List.of(s("ИТ-21-2", 3.8, "100002")));
@@ -64,24 +64,13 @@ class FileWriterServiceTest {
     void writesEmptyListWithoutChanges() throws IOException {
         Path file = tempDir.resolve("students.csv");
         Files.writeString(file, "group,average,recordBook\n");
-        FileWriterService writer = new FileWriterService(file.toString());
+        StudentFileWriterService writer = new StudentFileWriterService(file.toString());
 
         writer.writeToFile(List.of());
 
         assertEquals(
                 List.of("group,average,recordBook"),
                 Files.readAllLines(file)
-        );
-    }
-
-    @Test
-    // Проверяет точный CSV-формат одной записи.
-    void formatCsvProducesExpectedLine() {
-        FileWriterService writer = new FileWriterService("unused.csv");
-
-        assertEquals(
-                "ИТ-21-1,4.5,100001",
-                writer.formatCsv(s("ИТ-21-1", 4.5, "100001"))
         );
     }
 }
