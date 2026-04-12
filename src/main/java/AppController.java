@@ -34,18 +34,8 @@ public class AppController {
             String path = scanner.nextLine().trim();
             if (path.isEmpty()) path = DEFAULT_FILE;
 
-            List<Student> students;
-            try {
-                students = new FileDataSource(path).load();
-            } catch (Exception e) {
-                System.out.println("Ошибка: " + e.getMessage());
-                continue;
-            }
-
-            if (students.isEmpty()) {
-                System.out.println("Файл загружен, но список пустой");
-                continue;
-            }
+            List<Student> students = loadStudents(path);
+            if (students == null) continue;
 
             System.out.println("Загружено " + students.size() + " студентов.");
 
@@ -74,18 +64,14 @@ public class AppController {
                 System.out.printf("  %2d. %s%n", i + 1, students.get(i));
             }
 
-            // Cохраняем отсортированный результат в CSV.
+            System.out.print("\nНайти вхождения элемента? (y/n): ");
+            if (readYesNoChoice()) {
+                runCountOccurrencesFlow(students);
+            }
+
             System.out.print("\nСохранить результат в CSV? (y/n): ");
             if (readYesNoChoice()) {
-                System.out.print("Путь для сохранения (Enter = " + path + "): ");
-                String outputPath = scanner.nextLine().trim();
-                if (outputPath.isEmpty()) outputPath = path;
-                try {
-                    new StudentFileWriterService(outputPath).writeToFile(students);
-                    System.out.println("Сохранено в: " + outputPath);
-                } catch (Exception e) {
-                    System.out.println("Ошибка записи: " + e.getMessage());
-                }
+                runSaveToCSVFlow(students, path);
             }
 
             System.out.print("\nЕщё раз? (y/n): ");
@@ -93,6 +79,47 @@ public class AppController {
         }
 
         System.out.println("Пока!");
+    }
+
+    private List<Student> loadStudents(String path) {
+        List<Student> students;
+        try {
+            students = new FileDataSource(path).load();
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
+            return null;
+        }
+        if (students.isEmpty()) {
+            System.out.println("Файл загружен, но список пустой");
+            return null;
+        }
+        return students;
+    }
+
+    private void runCountOccurrencesFlow(List<Student> students) {
+        System.out.print("  введи студента (group,average,recordBook): ");
+        String input = scanner.nextLine().trim();
+        Student target;
+        try {
+            target = new StudentCsvFormatter(new StudentValidator()).parse(input);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Ошибка: " + e.getMessage());
+            return;
+        }
+        long count = new OccurrencesCounterService().countOccurrences(students, target);
+        System.out.println("Вхождений найдено: " + count);
+    }
+
+    private void runSaveToCSVFlow(List<Student> students, String defaultPath) {
+        System.out.print("Путь для сохранения (Enter = " + defaultPath + "): ");
+        String outputPath = scanner.nextLine().trim();
+        if (outputPath.isEmpty()) outputPath = defaultPath;
+        try {
+            new StudentFileWriterService(outputPath).writeToFile(students);
+            System.out.println("Сохранено в: " + outputPath);
+        } catch (Exception e) {
+            System.out.println("Ошибка записи: " + e.getMessage());
+        }
     }
 
     private int readInt() {
