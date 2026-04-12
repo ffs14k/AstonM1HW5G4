@@ -74,6 +74,20 @@ public class AppController {
                 System.out.printf("  %2d. %s%n", i + 1, students.get(i));
             }
 
+            // Cохраняем отсортированный результат в CSV.
+            System.out.print("\nСохранить результат в CSV? (y/n): ");
+            if (readYesNoChoice()) {
+                System.out.print("Путь для сохранения (Enter = " + path + "): ");
+                String outputPath = scanner.nextLine().trim();
+                if (outputPath.isEmpty()) outputPath = path;
+                try {
+                    new StudentFileWriterService(outputPath).writeToFile(students);
+                    System.out.println("Сохранено в: " + outputPath);
+                } catch (Exception e) {
+                    System.out.println("Ошибка записи: " + e.getMessage());
+                }
+            }
+
             System.out.print("\nЕщё раз? (y/n): ");
             if (!readYesNo()) running = false;
         }
@@ -92,6 +106,17 @@ public class AppController {
 
     private boolean readYesNo() {
         String s = scanner.nextLine().trim().toLowerCase();
-        return s.equals("y") || s.equals("n");
+        // Для повтора приложения считаем "да" только явный y.
+        return s.equals("y");
+    }
+
+    private boolean readYesNoChoice() {
+        // Валидируем ввод, пока пользователь не введет y/n.
+        while (true) {
+            String s = scanner.nextLine().trim().toLowerCase();
+            if (s.equals("y")) return true;
+            if (s.equals("n")) return false;
+            System.out.print("Введите y или n: ");
+        }
     }
 }
