@@ -57,7 +57,19 @@ public class AppController {
             }
 
             SortStrategy<Student> sort = new BubbleSort<>();
-            sort.sort(students, comparator);
+
+
+            if (field== 2  || field == 4) {
+                System.out.print("Применить EvenOdd сортировку (только чётные средние баллы)? (y/n): ");
+                if (readYesNoChoice()) {
+                    sort = new EvenOddDecorator(sort);
+                }
+
+            }
+
+            sort.sort(students,comparator);
+
+
 
             System.out.println();
             for (int i = 0; i < students.size(); i++) {
