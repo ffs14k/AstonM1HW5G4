@@ -5,10 +5,13 @@ import java.util.Scanner;
 public class AppController {
 
     private static final String DEFAULT_FILE = "data/students.csv";
-
+    private static final int MAX_RANDOM_STUDENTS = 50;  // ограничение кол-ва случайных студентов
     private final Scanner scanner = new Scanner(System.in);
 
     public void run() {
+        List<Student> students = null;
+        String path = DEFAULT_FILE;
+
         System.out.println("Сортировка студентов");
         System.out.println("--------------------");
 
@@ -16,6 +19,8 @@ public class AppController {
         while (running) {
             System.out.println();
             System.out.println("Источник данных:");
+            System.out.println("  3 - ручной ввод");
+            System.out.println("  2 - случайные данные");
             System.out.println("  1 - файл");
             System.out.println("  0 - выйти");
             System.out.print("> ");
@@ -25,19 +30,38 @@ public class AppController {
                 running = false;
                 continue;
             }
-            if (source != 1) {
-                System.out.println("Неверный выбор, попробуй ещё раз");
+            else if (source == 1) {
+                System.out.print("Путь к файлу (Enter = " + DEFAULT_FILE + "): ");
+                 path = scanner.nextLine().trim();
+                if (path.isEmpty()) path = DEFAULT_FILE;
+                students = loadStudents(path);
+                if (students == null) continue;
+                System.out.println("Загружено " + students.size() + " студентов.");
+            }
+            else if (source==2){
+                int count = readIntInRange(1, MAX_RANDOM_STUDENTS, "Количество студентов (1-" + MAX_RANDOM_STUDENTS + "): ");
+                RandomDataSource ds = new RandomDataSource(count);
+                students = ds.load();
+                if (students.isEmpty()) {
+                    System.out.println("Не удалось сгенерировать ни одного валидного студента. Попробуйте другой источник");
+                    continue;   // возврат к выбору источника
+                }
+                System.out.println("Сгенерировано " + students.size() + " студентов.");
+            }
+            else if (source==3){
+                ManualInputDataSource ds = new ManualInputDataSource(scanner);
+                students = ds.load();
+                if (students.isEmpty()) {
+                    System.out.println("Не введено ни одного валидного студента. Попробуйте другой источник");
+                    continue;
+                }
+                System.out.println("Введено " + students.size() + " студентов.");
+            }
+            else {
+                System.out.println("Некорректный ввод: Введите число от 0 до 3");
                 continue;
             }
 
-            System.out.print("Путь к файлу (Enter = " + DEFAULT_FILE + "): ");
-            String path = scanner.nextLine().trim();
-            if (path.isEmpty()) path = DEFAULT_FILE;
-
-            List<Student> students = loadStudents(path);
-            if (students == null) continue;
-
-            System.out.println("Загружено " + students.size() + " студентов.");
 
             System.out.println();
             System.out.println("Поле для сортировки:");
@@ -156,6 +180,17 @@ public class AppController {
             if (s.equals("y")) return true;
             if (s.equals("n")) return false;
             System.out.print("Введите y или n: ");
+        }
+    }
+    private int readIntInRange(int min, int max, String s) {
+        //Валидация ввода числа рандомных студентов
+        while (true) {
+            System.out.print(s);
+            int value = readInt();
+            if (value >= min && value <= max) {
+                return value;
+            }
+            System.out.println("Ошибка: введите число от " + min + " до " + max);
         }
     }
 }
